@@ -1,5 +1,13 @@
 #include <SPI.h>
 #include <SD.h>
+#include <OneWire.h>
+#include <Wire.h>
+#include "SDL_Arduino_INA3221.h"
+
+// the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
+#define LIPO_BATTERY_CHANNEL 1
+#define SOLAR_CELL_CHANNEL 2
+#define OUTPUT_CHANNEL 3
 
 Sd2Card card;
 SdVolume volume;
@@ -9,16 +17,14 @@ const int chipSelect = 10;
 
 /***********Début code init de pour lire et ecrire des donnée$**********************/
 File myFile;
-
 String buffer;
 String filename = "test";
 
 /**************Fin Code pour lire et ecrire des donnée$***************/
 /**************Début code init Thermométre ********************************/
 /* Dépendance pour le bus 1-Wire */
-#include <OneWire.h>
 float temperature;  
- 
+
 /* Broche du bus 1-Wire */
 const byte BROCHE_ONEWIRE = 7;
 
@@ -89,19 +95,13 @@ byte getTemperature(float *temperature, byte reset_search) {
 }
  /*************************Fin code Init Thermométre******************/
  /************************Debut code Init INA3221******************/
-#include <Wire.h>
-#include "SDL_Arduino_INA3221.h"
 float current_mA1 = 0;
 float current_mA2 = 0;
 float current_mA3 = 0;
 SDL_Arduino_INA3221 ina3221;
-
-// the three channels of the INA3221 named for SunAirPlus Solar Power Controller channels (www.switchdoc.com)
-#define LIPO_BATTERY_CHANNEL 1
-#define SOLAR_CELL_CHANNEL 2
-#define OUTPUT_CHANNEL 3
-
 int temps=0;
+int valeur = 0;
+float valeurLum = 0;
 /************************Fin code Init INA3221************************/
 /********************************** Fonction setup() *****************/
 
@@ -183,14 +183,14 @@ void setup() {
   Serial.println(MID,HEX);
 /*************** Fin Code setup INA3221********************************************************/
 delay(1000);
-
 }
+
 void loop(void) {
 /****************Début code  loop Luminosité**********************************************************/
-temps=temps+1;
+  temps=temps+1;
   Serial.print(F("Temps : ")); Serial.println(temps);
-  int valeur = analogRead(A0);
-  float valeurLum=( float (valeur)-770)/(1010-770)*100;
+  valeur = analogRead(A0);
+  valeurLum = ( float (valeur)-770)/(1010-770)*100;
 /* Affiche lluminosite */
   Serial.print(F("Luminosite : "));Serial.println(valeurLum); 
 /*****************Fin luminosité ********************************************************/
@@ -231,7 +231,7 @@ temps=temps+1;
   
   myFile = SD.open(filename + ".txt", FILE_WRITE);
   Serial.print(myFile);
-delay(1000);
+  delay(1000);
 //Serial.print("salut");
   if (myFile) {
         //Serial.print("Ecriture de température et de la luminosité sur la carte " + filename + ".txt...");
